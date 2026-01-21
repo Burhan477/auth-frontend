@@ -12,11 +12,14 @@ const XIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" 
 export default function Dashboard() {
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState("");
+  const [description, setDescription] = useState("");
+
   const [loading, setLoading] = useState(false);
 
   // Edit Mode State
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
 
   const navigate = useNavigate();
 
@@ -43,10 +46,11 @@ export default function Dashboard() {
     if (!newItem.trim()) return;
 
     try {
-      const res = await api.post("/items", { title: newItem });
+      const res = await api.post("/items", { title: newItem, description: description });
       // Update local state directly (faster UI)
       setItems([...items, res.data]);
       setNewItem("");
+      setDescription("");
       fetchItems();
     } catch (err) {
       console.error("Error adding item");
@@ -79,10 +83,10 @@ export default function Dashboard() {
   // 6. Save Edit (Update)
   const saveEdit = async (id) => {
     try {
-      await api.put(`/items/${id}`, { title: editTitle });
+      await api.put(`/items/${id}`, { title: editTitle, description: editDescription });
 
       setItems(items.map((item) =>
-        item.id === id ? { ...item, title: editTitle } : item
+        item.id === id ? { ...item, title: editTitle, description: editDescription } : item
       ));
 
       setEditingId(null);
@@ -115,6 +119,11 @@ export default function Dashboard() {
             value={newItem}
             onChange={(e) => setNewItem(e.target.value)}
           />
+          <input
+            placeholder="Description (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
           <button type="submit" disabled={!newItem}>Add</button>
         </form>
 
@@ -137,6 +146,11 @@ export default function Dashboard() {
                     onChange={(e) => setEditTitle(e.target.value)}
                     autoFocus
                   />
+                  <input
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    placeholder="Description (optional)"
+                  />
                   <div className="action-buttons">
                     <button onClick={() => saveEdit(item.id)} className="btn-icon save" title="Save">
                       <SaveIcon />
@@ -150,6 +164,7 @@ export default function Dashboard() {
                 // VIEW MODE
                 <div className="view-mode">
                   <span className="item-text">{item.title}</span>
+                  <span className="item-description">{item.description}</span>
                   <div className="action-buttons">
                     <button onClick={() => startEditing(item)} className="btn-icon edit" title="Edit">
                       <EditIcon />

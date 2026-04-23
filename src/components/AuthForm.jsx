@@ -5,6 +5,7 @@ import "../styles/auth.css";
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -22,7 +23,7 @@ export default function AuthForm() {
         const res = await api.post("/auth/login", { email, password });
         localStorage.setItem("token", res.data.token);
       } else {
-        await api.post("/auth/register", { email, password });
+        await api.post("/auth/register", { name, email, password });
         const res = await api.post("/auth/login", { email, password });
         localStorage.setItem("token", res.data.token);
       }
@@ -44,6 +45,18 @@ export default function AuthForm() {
 
         <form className="auth-form" onSubmit={handleSubmit}>
           {error && <div className="error-message">{error}</div>}
+
+          {!isLogin && (
+            <div className="input-group">
+              <input
+                type="text"
+                placeholder="Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
           <div className="input-group">
             <input

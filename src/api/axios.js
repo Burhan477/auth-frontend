@@ -1,7 +1,10 @@
 import axios from "axios";
 
+// Add a fallback || "http://localhost:5000"
+const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 const api = axios.create({
-  baseURL: "https://auth-backend-ruby.vercel.app/api",
+  baseURL: `${baseURL}/api`,
 });
 
 api.interceptors.request.use((config) => {

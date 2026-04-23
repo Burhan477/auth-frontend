@@ -1,98 +1,104 @@
+// src/pages/Dashboard.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import "../styles/dashboard.css";
 
-// Simple icons as components for cleaner code
-const TrashIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
-const EditIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>;
-const SaveIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>;
-const XIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+const TrashIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
+const EditIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>;
+const SaveIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>;
+const XIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
 
 export default function Dashboard() {
-  const [items, setItems] = useState([]);
-  const [newItem, setNewItem] = useState("");
-  const [description, setDescription] = useState("");
-
+  const [users, setUsers] = useState([]);
+  const [newName, setNewName] = useState(""); // Added Name state
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Edit Mode State
   const [editingId, setEditingId] = useState(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editDescription, setEditDescription] = useState("");
+  const [editName, setEditName] = useState(""); // Added Edit Name state
+  const [editEmail, setEditEmail] = useState("");
+  const [editPassword, setEditPassword] = useState("");
 
   const navigate = useNavigate();
 
-  // 1. Fetch Items
-  const fetchItems = async () => {
+  const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/items");
-      setItems(res.data);
+      const res = await api.get("/users");
+      setUsers(res.data);
     } catch (err) {
-      console.error("Failed to fetch", err);
+      console.error("Failed to fetch users", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchItems();
+    fetchUsers();
   }, []);
 
-  // 2. Create Item
-  const addItem = async (e) => {
+  const addUser = async (e) => {
     e.preventDefault();
-    if (!newItem.trim()) return;
+    if (!newName.trim() || !newEmail.trim() || !newPassword.trim()) return;
 
     try {
-      const res = await api.post("/items", { title: newItem, description: description });
-      // Update local state directly (faster UI)
-      setItems([...items, res.data]);
-      setNewItem("");
-      setDescription("");
-      fetchItems();
+      // Included name in payload
+      const res = await api.post("/users", { name: newName, email: newEmail, password: newPassword });
+      setUsers([...users, res.data]);
+      setNewName("");
+      setNewEmail("");
+      setNewPassword("");
     } catch (err) {
-      console.error("Error adding item");
+      console.error("Error adding user", err);
+      alert(err.response?.data?.error || "Error adding user");
     }
   };
 
-  // 3. Delete Item
-  const deleteItem = async (id) => {
-    if (!window.confirm("Are you sure?")) return;
+  const deleteUser = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await api.delete(`/items/${id}`);
-      setItems(items.filter((item) => item.id !== id));
+      await api.delete(`/users/${id}`);
+      setUsers(users.filter((user) => user.id !== id));
     } catch (err) {
-      console.error("Error deleting item");
+      console.error("Error deleting user");
     }
   };
 
-  // 4. Start Edit Mode
-  const startEditing = (item) => {
-    setEditingId(item.id);
-    setEditTitle(item.title);
+  const startEditing = (user) => {
+    setEditingId(user.id);
+    setEditName(user.name || ""); // Set initial edit name
+    setEditEmail(user.email);
+    setEditPassword("");
   };
 
-  // 5. Cancel Edit
   const cancelEditing = () => {
     setEditingId(null);
-    setEditTitle("");
+    setEditName("");
+    setEditEmail("");
+    setEditPassword("");
   };
 
-  // 6. Save Edit (Update)
   const saveEdit = async (id) => {
     try {
-      await api.put(`/items/${id}`, { title: editTitle, description: editDescription });
+      // Include name in update payload
+      const payload = { name: editName, email: editEmail };
+      if (editPassword.trim()) {
+        payload.password = editPassword;
+      }
 
-      setItems(items.map((item) =>
-        item.id === id ? { ...item, title: editTitle, description: editDescription } : item
+      const res = await api.put(`/users/${id}`, payload);
+
+      setUsers(users.map((user) =>
+        user.id === id ? { ...user, name: res.data.name, email: res.data.email } : user
       ));
 
       setEditingId(null);
-      fetchItems();
     } catch (err) {
-      console.error("Error updating item");
+      console.error("Error updating user");
+      alert(err.response?.data?.error || "Error updating user");
     }
   };
 
@@ -104,80 +110,128 @@ export default function Dashboard() {
   return (
     <div className="dashboard-container">
       <div className="dashboard-card">
+
         <div className="dashboard-header">
           <div>
-            <h2>My Tasks</h2>
-            <p className="subtitle">Manage your daily items</p>
+            <h2>User Management</h2>
+            <p className="subtitle">Add, edit, or remove system users</p>
           </div>
-          <button className="logout-btn" onClick={handleLogout}>Logout</button>
+          <button className="logout-btn" onClick={handleLogout}>Log Out</button>
         </div>
 
-        {/* Add Item Form */}
-        <form className="add-form" onSubmit={addItem}>
-          <input
-            placeholder="What needs to be done?"
-            value={newItem}
-            onChange={(e) => setNewItem(e.target.value)}
-          />
-          <input
-            placeholder="Description (optional)"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <button type="submit" disabled={!newItem}>Add</button>
-        </form>
+        {/* Add User Section */}
+        <div className="add-user-section">
+          <h3>Create New User</h3>
+          <form className="add-form" onSubmit={addUser}>
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              required
+            />
+            <input
+              type="email"
+              placeholder="Email Address"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Secure Password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+            />
+            <button type="submit" disabled={!newName || !newEmail || !newPassword}>Create User</button>
+          </form>
+        </div>
 
-        {/* Loading State */}
-        {loading && <div className="loading-text">Loading tasks...</div>}
+        {loading && <div className="loading-text">Loading user records...</div>}
 
-        {/* Item List */}
-        <ul className="item-list">
-          {items.length === 0 && !loading && (
-            <li className="empty-state">No items yet. Add one above!</li>
-          )}
+        {/* Data Grid / Table */}
+        <div className="user-table-container">
+          <div className="table-header">
+            <span>Name</span>
+            <span>Email Address</span>
+            <span>User ID</span>
+            <span style={{ textAlign: 'right' }}>Actions</span>
+          </div>
 
-          {items.map((item) => (
-            <li className="item-row" key={item.id}>
-              {editingId === item.id ? (
-                // EDIT MODE
-                <div className="edit-mode">
-                  <input
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    autoFocus
-                  />
-                  <input
-                    value={editDescription}
-                    onChange={(e) => setEditDescription(e.target.value)}
-                    placeholder="Description (optional)"
-                  />
-                  <div className="action-buttons">
-                    <button onClick={() => saveEdit(item.id)} className="btn-icon save" title="Save">
-                      <SaveIcon />
-                    </button>
-                    <button onClick={cancelEditing} className="btn-icon cancel" title="Cancel">
-                      <XIcon />
-                    </button>
+          <ul className="user-list">
+            {users.length === 0 && !loading && (
+              <li className="empty-state">No users found. Create one above to get started.</li>
+            )}
+
+            {users.map((user) => (
+              <li className="user-row" key={user.id}>
+                {editingId === user.id ? (
+                  // IMPROVED EDIT MODE: Wrapped in a form for "Enter" key support
+                  <form
+                    className="edit-mode active-edit-row"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      saveEdit(user.id);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') cancelEditing();
+                    }}
+                  >
+                    <input
+                      type="text"
+                      className="edit-input"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      placeholder="Full Name"
+                      autoFocus
+                      required
+                    />
+                    <input
+                      type="email"
+                      className="edit-input"
+                      value={editEmail}
+                      onChange={(e) => setEditEmail(e.target.value)}
+                      placeholder="Email Address"
+                      required
+                    />
+                    <input
+                      type="password"
+                      className="edit-input"
+                      value={editPassword}
+                      onChange={(e) => setEditPassword(e.target.value)}
+                      placeholder="New Password (Optional)"
+                    />
+                    <div className="action-buttons">
+                      <button type="submit" className="btn-icon save" title="Save Changes (Enter)">
+                        <SaveIcon />
+                      </button>
+                      <button type="button" onClick={cancelEditing} className="btn-icon cancel" title="Cancel (Esc)">
+                        <XIcon />
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  // VIEW MODE
+                  <div className="view-mode">
+                    <span className="user-text" style={{ fontWeight: 600 }}>{user.name || "N/A"}</span>
+                    <span className="user-text">{user.email}</span>
+                    <span className="user-id">#{user.id}</span>
+                    <div className="action-buttons">
+                      <button onClick={() => startEditing(user)} className="btn-icon edit" title="Edit User">
+                        <EditIcon />
+                      </button>
+                      <button onClick={() => deleteUser(user.id)} className="btn-icon delete" title="Delete User">
+                        <TrashIcon />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                // VIEW MODE
-                <div className="view-mode">
-                  <span className="item-text">{item.title}</span>
-                  <span className="item-description">{item.description}</span>
-                  <div className="action-buttons">
-                    <button onClick={() => startEditing(item)} className="btn-icon edit" title="Edit">
-                      <EditIcon />
-                    </button>
-                    <button onClick={() => deleteItem(item.id)} className="btn-icon delete" title="Delete">
-                      <TrashIcon />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+
       </div>
     </div>
   );
